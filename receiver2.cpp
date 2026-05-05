@@ -9,7 +9,7 @@ extern "C"{
 }
 
 void receiver_thread_func() {
-    int rst1 = open_can("/mnt/c/Users/fortn/Desktop/The Chest/Code/eagletrt recruiting-sw master telemetry-project_2/candump.log");
+    int rst1 = open_can(can_file.c_str());
     if (rst1 == 0) {
         cout << "CAN interface opened successfully." << endl;
     } else if (rst1 == -1) {

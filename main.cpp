@@ -113,7 +113,8 @@ void msg_to_file(const char* message, const char* id){
 
 // wanted to multithread this one, but the docs only mention 2 threads
 void gen_csv() {
-    FILE* csvfile = fopen("output.csv", "w");
+    string f = "output" + to_string(current_session) + ".csv";
+    FILE* csvfile = fopen(f.c_str(), "w");
     if (csvfile == NULL) {
         cerr << "Failed to open CSV file." << endl;
         return;
@@ -147,6 +148,10 @@ void arg_check(int argc, char* argv[]) {
         }
         if (strcmp(args, "--overwrite") == 0) {
             OVERWRITE = true;
+        }
+        if (strcmp(args, "-f") == 0 && i + 1 < argc) {
+            can_file = argv[i + 1];
+            i++;
         }
     }
 }
