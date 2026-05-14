@@ -79,7 +79,7 @@ void parse_message(const char* message){
     char* id = token;
     token = strtok(NULL, "#");
     char* data = token;
-    cout << "ID: " << id << ", Data: " << data << endl;
+    if (DEBUG) cout << "ID: " << id << ", Data: " << data << endl;
     if (strcmp(id, "0A0") == 0) { // godawful nested if statement
         if ((strcmp(data, "6601") == 0 || strcmp(data, "FF01") == 0) && current_state == IDLE) {
             open_new("session");
@@ -96,7 +96,7 @@ void parse_message(const char* message){
 }
 
 void msg_to_file(const char* message, const char* id){
-    cout << "Saving message to file: " << message << endl;
+    if (DEBUG) cout << "Saving message to file: " << message << endl;
     if (current_file == NULL) {
         cerr << "Current file is NULL." << endl;
         return;
