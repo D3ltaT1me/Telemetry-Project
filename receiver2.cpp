@@ -14,7 +14,7 @@ void receiver_thread_func() {
         cout << "CAN interface opened successfully." << endl;
     } else if (rst1 == -1) {
         cerr << "Failed to open CAN interface." << endl;
-        return;
+        running = false;
     }
 
     while (running) {
