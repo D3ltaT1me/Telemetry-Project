@@ -65,37 +65,36 @@ void close_current(){
     }
 }
 
-void msg_to_file(const char* message, const char* id); // apparently I need to declare stuff before I use it, who knew
+void msg_to_file(string message, string id); // apparently I need to declare stuff before I use it, who knew
 
-void parse_message(const char* message){
+void parse_message(string message){
     cout << "Parsing message: " << message << endl;
     // <ID>#<DATA>
-
-    // buffer because strtok doesn't like string literals
-    char buffer[21]; // MAX_CAN_MESSAGE_SIZE + 1 for null terminator
-    strncpy(buffer, message, sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
-    char* token = strtok(buffer, "#");
-    char* id = token;
-    token = strtok(NULL, "#");
-    char* data = token;
+    int pos = message.find('#');
+    string data = message.substr(pos+1);
+    string id = message.substr(0,pos);
     if (DEBUG) cout << "ID: " << id << ", Data: " << data << endl;
-    if (strcmp(id, "0A0") == 0) { // godawful nested if statement
-        if ((strcmp(data, "6601") == 0 || strcmp(data, "FF01") == 0) && current_state == IDLE) {
-            open_new("session");
-            current_session++;
-            current_state = RUN;
-        } else if (strcmp(data, "66FF") == 0 && current_state == RUN) {
-            close_current();
-            current_state = IDLE;
-        }
-    } 
-    if (current_state == RUN) {
-        msg_to_file(message, id); // actually write to file
+    unsigned long data_n = stoul(data, nullptr, 16);
+    unsigned long id_n = stoul(id, nullptr, 16);
+    switch (current_state) {
+        case IDLE:
+            if (id_n == 160 && (data_n == 26113 || data_n == 65281)) {
+                open_new("session");
+                current_session++;
+                current_state = RUN;
+            }
+            break;
+        case RUN:
+            msg_to_file(message, id);
+            if (id_n == 160 && data_n == 26367) {
+                close_current();
+                current_state = IDLE;
+            }
+            break;
     }
 }
 
-void msg_to_file(const char* message, const char* id){
+void msg_to_file(string message, string id){
     if (DEBUG) cout << "Saving message to file: " << message << endl;
     if (current_file == NULL) {
         cerr << "Current file is NULL." << endl;
@@ -108,7 +107,7 @@ void msg_to_file(const char* message, const char* id){
     int milliseconds = ms % 1000;
     struct tm* timeinfo = localtime(&seconds);
     fprintf(current_file, "(%04d-%02d-%02d %02d:%02d:%02d.%03d) %s\n", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, milliseconds, message);
-    ID_map[string(id)].push_back((long long)ms);
+    ID_map[id].push_back((long long)ms);
 }
 
 // wanted to multithread this one, but the docs only mention 2 threads
